@@ -11,6 +11,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Install jq and curl
+        run: sudo apt-get install -y jq curl
+
       - name: Get the time
         id: time
         run: |
@@ -26,14 +29,21 @@ jobs:
           IP=$(curl -s https://api.ipify.org)
           
           # Fetch location information
-          RESPONSE=$(curl -s https://ipinfo.io/${IP}/json)
-          LOCATION=$(echo $RESPONSE | jq -r '.city, .region, .country' | paste -sd ', ')
-          LAT=$(echo $RESPONSE | jq -r '.loc' | cut -d',' -f1)
-          LONG=$(echo $RESPONSE | jq -r '.loc' | cut -d',' -f2)
+          RESPONSE=$(curl -s https://geolocation-db.com/json/${IP}&position=true)
+          LOCATION=$(echo $RESPONSE | jq -r '.city, .state, .country_name' | paste -sd ', ')
+          LAT=$(echo $RESPONSE | jq -r '.latitude')
+          LONG=$(echo $RESPONSE | jq -r '.longitude')
 
           # Get OS and version
           OS=$(uname -s)
-          OS_VERSION=$(lsb_release -ds)
+          OS_VERSION=$(lsb_release -cs)
+          if [ "$OS" == "Linux" ]; then
+            OS_VERSION_DESC=$(lsb_release -ds)
+          else
+            OS_VERSION_DESC="Unknown"
+          fi
+
+          # Browser is not applicable in the context of a GitHub Actions runner
           BROWSER="GitHub Actions Runner"
 
           # Export variables
@@ -42,15 +52,5 @@ jobs:
           echo "latitude=${LAT}" >> $GITHUB_ENV
           echo "longitude=${LONG}" >> $GITHUB_ENV
           echo "os=${OS}" >> $GITHUB_ENV
-          echo "os_version=${OS_VERSION}" >> $GITHUB_ENV
-          echo "browser=${BROWSER}" >> $GITHUB_ENV
-
-      - name: Send the time and IP info
-        uses: satak/webrequest-action@master  # Ensure using the correct version
-        with:
-          url: ${{ secrets.DISCORD_WEBHOOK }}
-          method: POST
-          payload: |
-            {
-              "content": "The workflow ran at ${{ env.now }}\nIP Address: ${{ env.ip }}\nLocation: ${{ env.location }}\nLatitude: ${{ env.latitude }}\nLongitude: ${{ env.longitude }}\nOperating System: ${{ env.os }}\nOS Version: ${{ env.os_version }}\nBrowser: ${{ env.browser }}"
-            }
+          echo "os_version=${OS_VERSION_DESC}" >> $GITHUB_ENV
+          ec
