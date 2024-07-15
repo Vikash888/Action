@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3  # This action will run on Node.js 20 by default
+        uses: actions/checkout@v3
 
       - name: Get the time
         id: time
@@ -20,8 +20,8 @@ jobs:
           TZ: Asia/Kolkata  # Correct timezone for India
 
       - name: Send the time
-        uses: satak/webrequest-action@master
+        uses: satak/webrequest-action@master  # Ensure using the correct version
         with:
           url: ${{ secrets.DISCORD_WEBHOOK }}
           method: POST
-          payload: '{"content": "The workflow ran at ${{ env.now }}"}'  # Corrected syntax
+          payload: '{"content": "The workflow ran at ${{ env.now }}"}'
