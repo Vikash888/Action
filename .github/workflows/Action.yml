@@ -19,9 +19,38 @@ jobs:
         env:
           TZ: Asia/Kolkata  # Correct timezone for India
 
-      - name: Send the time
+      - name: Get IP Address and Location Information
+        id: ip-info
+        run: |
+          # Fetch IP address
+          IP=$(curl -s https://api.ipify.org)
+          
+          # Fetch location information
+          RESPONSE=$(curl -s https://ipinfo.io/${IP}/json)
+          LOCATION=$(echo $RESPONSE | jq -r '.city, .region, .country' | paste -sd ', ')
+          LAT=$(echo $RESPONSE | jq -r '.loc' | cut -d',' -f1)
+          LONG=$(echo $RESPONSE | jq -r '.loc' | cut -d',' -f2)
+
+          # Get OS and version
+          OS=$(uname -s)
+          OS_VERSION=$(lsb_release -ds)
+          BROWSER="GitHub Actions Runner"
+
+          # Export variables
+          echo "ip=${IP}" >> $GITHUB_ENV
+          echo "location=${LOCATION}" >> $GITHUB_ENV
+          echo "latitude=${LAT}" >> $GITHUB_ENV
+          echo "longitude=${LONG}" >> $GITHUB_ENV
+          echo "os=${OS}" >> $GITHUB_ENV
+          echo "os_version=${OS_VERSION}" >> $GITHUB_ENV
+          echo "browser=${BROWSER}" >> $GITHUB_ENV
+
+      - name: Send the time and IP info
         uses: satak/webrequest-action@master  # Ensure using the correct version
         with:
           url: ${{ secrets.DISCORD_WEBHOOK }}
           method: POST
-          payload: '{"content": "The workflow ran at ${{ env.now }}"}'
+          payload: |
+            {
+              "content": "The workflow ran at ${{ env.now }}\nIP Address: ${{ env.ip }}\nLocation: ${{ env.location }}\nLatitude: ${{ env.latitude }}\nLongitude: ${{ env.longitude }}\nOperating System: ${{ env.os }}\nOS Version: ${{ env.os_version }}\nBrowser: ${{ env.browser }}"
+            }
