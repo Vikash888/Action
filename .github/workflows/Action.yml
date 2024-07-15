@@ -12,7 +12,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install jq and curl
-        run: sudo apt-get install -y jq curl
+        run: sudo apt-get update && sudo apt-get install -y jq curl
 
       - name: Get the time
         id: time
@@ -27,7 +27,7 @@ jobs:
         run: |
           # Fetch IP address
           IP=$(curl -s https://api.ipify.org)
-          
+
           # Fetch location information
           RESPONSE=$(curl -s https://geolocation-db.com/json/${IP}&position=true)
           LOCATION=$(echo $RESPONSE | jq -r '.city, .state, .country_name' | paste -sd ', ')
@@ -36,7 +36,7 @@ jobs:
 
           # Get OS and version
           OS=$(uname -s)
-          OS_VERSION=$(lsb_release -cs)
+          OS_VERSION=$(lsb_release -ds)
           if [ "$OS" == "Linux" ]; then
             OS_VERSION_DESC=$(lsb_release -ds)
           else
@@ -53,4 +53,14 @@ jobs:
           echo "longitude=${LONG}" >> $GITHUB_ENV
           echo "os=${OS}" >> $GITHUB_ENV
           echo "os_version=${OS_VERSION_DESC}" >> $GITHUB_ENV
-          ec
+          echo "browser=${BROWSER}" >> $GITHUB_ENV
+
+      - name: Send the time and IP info
+        uses: satak/webrequest-action@master  # Ensure using the correct version
+        with:
+          url: ${{ secrets.DISCORD_WEBHOOK }}
+          method: POST
+          payload: |
+            {
+              "content": "The workflow ran at ${{ env.now }}\nIP Address: ${{ env.ip }}\nLocation: ${{ env.location }}\nLatitude: ${{ env.latitude }}\nLongitude: ${{ env.longitude }}\nOperating System: ${{ env.os }}\nOS Version: ${{ env.os_version }}\nBrowser: ${{ env.browser }}"
+            }
