@@ -24,4 +24,4 @@ jobs:
         with:
           url: ${{ secrets.DISCORD_WEBHOOK }}
           method: POST
-          payload: '{"content": "The workflow ran at ${{ env.now }}"}'  
+          payload: '{"content": "The workflow ran at ${{ env.now }}"}' 
