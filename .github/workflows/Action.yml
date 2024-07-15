@@ -22,6 +22,6 @@ jobs:
       - name: Send the time
         uses: satak/webrequest-action@master  # Ensure using the correct version
         with:
-          url: https://discord.gg/p7pAwGFT
+          url: https://discord.com/api/webhooks/1262504162751680582/6BqMbWkomK8CpKQl2HaHVDWS-cAFEJtmGDbjsiBvBSNk14boIbZbXGm-Px7sDzUdU0I2
           method: POST
           payload: '{"content": "The workflow ran at ${{ env.now }}"}'
