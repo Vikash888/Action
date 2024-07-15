@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  # This action will run on Node.js 20 by default
 
       - name: Get the time
         id: time
@@ -24,4 +24,4 @@ jobs:
         with:
           url: ${{ secrets.DISCORD_WEBHOOK }}
           method: POST
-          payload: '{"content": "The workflow ran at ${{ env.now }}"}' 
+          payload: '{"content": "The workflow ran at ${{ env.now }}"}'  # Corrected syntax
